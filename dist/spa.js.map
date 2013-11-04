@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "spa.js",
+  "sourceRoot": "../src/",
+  "sources": [
+    "spa.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA;;;;;;;;;;;;;;;;;;;;;;;;;CAAA;;CA0BA;;;CA1BA;CAAA;CAAA;CAAA,EAAA,GAAA;;CAAA,CA6BM;CAEJ;;CAAA,EAAC,CAAD,GAAc,EAAE,EAAhB;CAA0B,EAAV,CAAA,EAAD,CAAW;CAA1B,IAAc;;CAAd;;CA/BF;;CAkCA,EAAA,MAAO;CAlCP"
+}

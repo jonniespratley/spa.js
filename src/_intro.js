@@ -1,3 +1,1 @@
-(function(root, undefined) {
-
-  "use strict";
+/*intro*/

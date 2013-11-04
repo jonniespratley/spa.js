@@ -16,7 +16,7 @@ module.exports = function(grunt) {
 				separator : "\n\n"
 			},
 			dist : {
-				src : ['src/_intro.js', 'src/main.js', 'src/_outro.js'],
+				src : ['src/*.js'],
 				dest : 'dist/<%= pkg.name.replace(".js", "") %>.js'
 			}
 		},
@@ -54,6 +54,17 @@ module.exports = function(grunt) {
 					'<%= yo.src %>/<%= pkg.name %>.js' : '<%= yo.src %>/<%= pkg.name %>.coffee',
 					'<%= yo.dist %>/<%= pkg.name %>.js' : '<%= yo.src %>/<%= pkg.name %>.coffee'
 				}
+			},
+			glob_to_multiple : {
+				options : {
+					sourceMap : true
+				},
+				expand : true,
+				flatten : false,
+				cwd : "<%= yo.src %>/",
+				src : ["**/*.coffee"],
+				dest : "<%= yo.dist %>/",
+				ext : ".js"
 			}
 		},
 
