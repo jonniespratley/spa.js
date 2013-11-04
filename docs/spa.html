@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>spa.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>spa.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="comment">/**
+ spa.js Framework
+
+ @version 1.0.0
+ @license MIT-License &lt;http://opensource.org/licenses/MIT&gt;
+
+ Copyright (c) 2013 spa.js
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
+ */</span>
+
+<span class="comment">/**
+ spa.js Framework
+ */</span>
+
+(<span class="keyword">function</span>() {
+	define(<span class="keyword">function</span>() {<span class="string">"use strict"</span>;
+		<span class="comment">/**
+		 The main spa object
+		 @type {Object}
+		 */</span>
+
+		<span class="keyword">var</span> spa;
+		spa = {
+			<span class="comment">/**
+			 Container for all routes
+			 @type {Object}
+			 */</span>
+
+			routes : {},
+			<span class="comment">/**
+			 Container for all module objects
+			 @type {Object}
+			 */</span>
+
+			scope : {},
+			<span class="comment">/**
+			 Conatiner for all dependencies
+			 @type {Object}
+			 */</span>
+
+			dependencies : {},
+			<span class="comment">/**
+			 Container for all models
+			 @type {Object}
+			 */</span>
+
+			models : {},
+			<span class="comment">/**
+			 Container for all defined xhr requests
+			 @type {Object}
+			 */</span>
+
+			requests : {},
+			<span class="comment">/**
+			 @method init
+
+			 Adds module to spa object, sets up core properties and initializes router
+			 */</span>
+
+			init : <span class="keyword">function</span>() {
+				<span class="keyword">var</span> i, max, module, _<span class="keyword">this</span>;
+				module =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				window.spa = <span class="keyword">this</span>;
+				require(<span class="keyword">this</span>.modules, <span class="keyword">function</span>() {
+					i = <span class="number">0</span>;
+					max = arguments_.length;
+					<span class="keyword">while</span>(i &lt; max) {
+						module = _<span class="keyword">this</span>.modules[i].split(<span class="string">"/"</span>).pop();
+						_<span class="keyword">this</span>.scope[module] = arguments_[i];
+						_<span class="keyword">this</span>.scope[module].mid = module;
+						_<span class="keyword">this</span>.scope[module].el = document.querySelectorAll(<span class="string">"[data-view='"</span> + module + <span class="string">"']"</span>);
+						<span class="keyword">if</span>( <span class="keyword">typeof</span> jQuery !== <span class="string">"undefined"</span>) {
+							_<span class="keyword">this</span>.scope[module].$el = jQuery(<span class="string">"[data-view='"</span> + module + <span class="string">"']"</span>);
+						}
+						_<span class="keyword">this</span>.scope[module].forEachEl = _<span class="keyword">this</span>.forEachEl;
+						i++;
+					}
+					<span class="keyword">return</span> _<span class="keyword">this</span>.router();
+				});
+				<span class="keyword">if</span>(!Function.prototype.bind) {
+					<span class="keyword">return</span> <span class="keyword">this</span>.polyfill_bind();
+				}
+			},
+			<span class="comment">/**
+			 @method router
+
+			 Sets up Routing Table, binds and loads Routes
+			 */</span>
+
+			router : <span class="keyword">function</span>() {
+				<span class="keyword">var</span> cur_route, module, route, _<span class="keyword">this</span>;
+				cur_route = window.location.hash;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				module =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				route =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">for</span>(module <span class="keyword">in</span> <span class="keyword">this</span>.scope) {
+					<span class="keyword">if</span>(<span class="keyword">this</span>.scope.hasOwnProperty(module)) {
+						<span class="keyword">for</span>(route <span class="keyword">in</span> <span class="keyword">this</span>.scope[module].routes) {
+							<span class="keyword">if</span>(!<span class="keyword">this</span>.routes.hasOwnProperty(route)) {
+								<span class="keyword">this</span>.routes[route] = [[module, <span class="keyword">this</span>.scope[module].routes[route]]];
+							} <span class="keyword">else</span> {
+								<span class="keyword">this</span>.routes[route].push([module, <span class="keyword">this</span>.scope[module].routes[route]]);
+							}
+						}
+					}
+				}
+				<span class="keyword">this</span>.loadUrl(cur_route);
+				<span class="keyword">return</span> window.onhashchange = <span class="keyword">function</span>() {
+					<span class="keyword">return</span> _<span class="keyword">this</span>.loadUrl(window.location.hash);
+				};
+			},
+			<span class="comment">/**
+			 @method loadUrl
+
+			 Checks to verify that current route matches a module's route, passes it to the processor() and hides all modules that don't need to be rendered
+
+			 @param {String} fragment The current hash
+			 */</span>
+
+			loadUrl : <span class="keyword">function</span>(fragment) {
+				<span class="keyword">var</span> bits, el_lock, i, max, module_name, qs_data, querystring, route, url_data, _i, _max, _results, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				querystring = <span class="literal">false</span>;
+				url_data = {};
+				qs_data =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				el_lock =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				module_name =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				route =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				_i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				_max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				bits =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				fragment = fragment.replace(<span class="string">"#!/"</span>, <span class="string">""</span>);
+				<span class="keyword">if</span>(fragment.substr(-<span class="number">1</span>) === <span class="string">"/"</span>) {
+					fragment = fragment.substr(<span class="number">0</span>, fragment.length - <span class="number">1</span>);
+				}
+				fragment = fragment.split(<span class="string">"?"</span>);
+				<span class="keyword">if</span>(fragment[<span class="number">1</span>]) {
+					querystring = fragment[<span class="number">1</span>];
+				}
+				fragment = fragment[<span class="number">0</span>].split(<span class="string">"/"</span>);
+				<span class="keyword">if</span>(fragment.length &gt; <span class="number">0</span>) {
+					i = <span class="number">1</span>;
+					max = fragment.length;
+					<span class="keyword">while</span>(i &lt; max) {
+						url_data[i - <span class="number">1</span>] = fragment[i];
+						i++;
+					}
+				}
+				<span class="keyword">if</span>(querystring) {
+					qs_data = querystring.split(<span class="string">"&amp;"</span>);
+					i = <span class="number">0</span>;
+					max = qs_data.length;
+					<span class="keyword">while</span>(i &lt; max) {
+						bits = qs_data[i].split(<span class="string">"="</span>);
+						url_data[bits[<span class="number">0</span>]] = bits[<span class="number">1</span>];
+						i++;
+					}
+				}
+				_<span class="keyword">this</span>.current_route = fragment[<span class="number">0</span>];
+				_<span class="keyword">this</span>.url_data = url_data;
+				_results = [];
+				<span class="keyword">for</span>(route <span class="keyword">in</span> _<span class="keyword">this</span>.routes) {
+					<span class="keyword">if</span>(_<span class="keyword">this</span>.routes.hasOwnProperty(route)) {
+						_i = <span class="number">0</span>;
+						_max = _<span class="keyword">this</span>.routes[route].length;
+						_results.push((<span class="keyword">function</span>() {
+							<span class="keyword">var</span> _results1;
+							_results1 = [];
+							<span class="keyword">while</span>(_i &lt; _max) {
+								module_name = _<span class="keyword">this</span>.routes[route][_i][<span class="number">0</span>];
+								<span class="keyword">if</span>(fragment[<span class="number">0</span>] === route || route === <span class="string">"*"</span>) {
+									<span class="keyword">if</span>(el_lock !== module_name) {
+										el_lock = module_name;
+										_<span class="keyword">this</span>.processor(module_name, _<span class="keyword">this</span>.routes[route][_i][<span class="number">1</span>], url_data);
+									}
+								} <span class="keyword">else</span> {
+									_<span class="keyword">this</span>.unrender(module_name);
+								}
+								_results1.push(_i++);
+							}
+							<span class="keyword">return</span> _results1;
+						})());
+					} <span class="keyword">else</span> {
+						_results.push(
+						<span class="keyword">void</span> <span class="number">0</span>);
+					}
+				}
+				<span class="keyword">return</span> _results;
+			},
+			<span class="comment">/**
+			 @method processor
+
+			 Handles processing of the module, loads template, fires dependency loader then the route event
+
+			 @param {Object} module The module object to be used.
+			 @param {Function} route_fn The return function from the route.
+			 @param {Object} url_data The data from any url query strings
+			 */</span>
+
+			processor : <span class="keyword">function</span>(module, route_fn, url_data) {
+				<span class="keyword">var</span> scope, _<span class="keyword">this</span>;
+				scope = <span class="keyword">this</span>.scope[module];
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				scope.loaded = <span class="literal">true</span>;
+				<span class="keyword">if</span>(!scope.hasOwnProperty(<span class="string">"template"</span>)) {
+					<span class="keyword">return</span> _<span class="keyword">this</span>.ajax({
+						url : <span class="string">"templates/"</span> + scope.mid + <span class="string">".tpl"</span>,
+						type : <span class="string">"GET"</span>,
+						success : <span class="keyword">function</span>(data) {
+							scope.template = data;
+							<span class="keyword">return</span> _<span class="keyword">this</span>.loadDependencies(scope, <span class="keyword">function</span>() {
+								<span class="keyword">return</span> scope[route_fn](url_data);
+							});
+						},
+						error : <span class="keyword">function</span>() {
+							<span class="keyword">return</span> console.log(<span class="string">"Could not load template for "</span> + scope.mid);
+						}
+					});
+				} <span class="keyword">else</span> {
+					<span class="keyword">return</span> _<span class="keyword">this</span>.loadDependencies(scope, <span class="keyword">function</span>() {
+						<span class="keyword">return</span> scope[route_fn](url_data);
+					});
+				}
+			},
+			<span class="comment">/**
+			 @method loadDependencies
+
+			 Checks for &amp; loads any dependencies before calling the route's function
+
+			 @param {Object} scope The module object to be used.
+			 @param {Function} callback Function to execute when all deps are loaded
+			 */</span>
+
+			loadDependencies : <span class="keyword">function</span>(scope, callback) {
+				<span class="keyword">var</span> arr_dep_name, arr_dep_src, dep, dep_name, dep_src, i, max, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				dep =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				dep_name =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				dep_src =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				arr_dep_name = [];
+				arr_dep_src = [];
+				<span class="keyword">if</span>(scope.hasOwnProperty(<span class="string">"dependencies"</span>)) {
+					<span class="keyword">for</span>(dep <span class="keyword">in</span> scope.dependencies) {
+						<span class="keyword">if</span>(scope.dependencies.hasOwnProperty(dep)) {
+							dep_name = dep;
+							dep_src = scope.dependencies[dep];
+							<span class="keyword">if</span>(_<span class="keyword">this</span>.dependencies.hasOwnProperty(dep_src)) {
+								scope[dep_name] = _<span class="keyword">this</span>.dependencies[dep_src];
+							} <span class="keyword">else</span> {
+								arr_dep_name.push(dep_name);
+								arr_dep_src.push(dep_src);
+							}
+						}
+					}
+					<span class="keyword">return</span> require(arr_dep_src, <span class="keyword">function</span>() {
+						i = <span class="number">0</span>;
+						max = arguments_.length;
+						<span class="keyword">while</span>(i &lt; max) {
+							scope[arr_dep_name[i]] = arguments_[i];
+							_<span class="keyword">this</span>.dependencies[arr_dep_src[i]] = arguments_[i];
+							i++;
+						}
+						<span class="keyword">if</span>(callback &amp;&amp; <span class="keyword">typeof</span> callback === <span class="string">"function"</span>) {
+							<span class="keyword">return</span> callback(scope);
+						}
+					});
+				} <span class="keyword">else</span> {
+					<span class="keyword">if</span>(callback &amp;&amp; <span class="keyword">typeof</span> callback === <span class="string">"function"</span>) {
+						<span class="keyword">return</span> callback(scope);
+					}
+				}
+			},
+			<span class="comment">/**
+			 @method render
+
+			 Renders a module's template onto the screen
+
+			 @param {Object} scope The module object to be used.
+			 @param {Object} [data] Any data to be rendered onto the template.
+			 */</span>
+
+			render : <span class="keyword">function</span>(scope, data) {
+				<span class="keyword">var</span> el, i, max, rendered, template, templateRender, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				template = scope.template;
+				templateRender =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				rendered =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				el =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				templateRender = <span class="keyword">function</span>(i, match) {
+					<span class="keyword">return</span> data[match];
+				};
+				max = scope.el.length;
+				i = <span class="number">0</span>;
+				<span class="keyword">while</span>(i &lt; max) {
+					el = scope.el[i];
+					rendered = template.replace(<span class="regexp">/\{\{([^}]+)\}\}/g</span>, templateRender);
+					el.innerHTML = rendered;
+					el.style.display = <span class="string">"block"</span>;
+					i++;
+				}
+				<span class="keyword">return</span> _<span class="keyword">this</span>.delegateEvents(scope.events, scope);
+			},
+			<span class="comment">/**
+			 @method unrender
+
+			 Removes unused modules' content from DOM and sets display to none
+
+			 @param {String} module_name The name of the module to unrender
+			 */</span>
+
+			unrender : <span class="keyword">function</span>(module_name) {
+				<span class="keyword">var</span> el, index, max, _results;
+				index =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				el =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				el = document.querySelectorAll(<span class="string">"[data-view='"</span> + module_name + <span class="string">"']"</span>);
+				index = <span class="number">0</span>;
+				max = el.length;
+				_results = [];
+				<span class="keyword">while</span>(index &lt; max) {
+					el[index].innerHTML = <span class="string">""</span>;
+					el[index].style.display = <span class="string">"none"</span>;
+					_results.push(index++);
+				}
+				<span class="keyword">return</span> _results;
+			},
+			<span class="comment">/**
+			 @method access
+
+			 Proxy function for accessing other modules and their dependencies
+
+			 @param {Object} module Name of the module to access
+			 @param {Function} callback The function to fire once access is complete
+			 */</span>
+
+			access : <span class="keyword">function</span>(module, callback) {
+				<span class="keyword">var</span> scope, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				scope = <span class="keyword">this</span>.scope[module];
+				<span class="keyword">if</span>(!scope.hasOwnProperty(<span class="string">"loaded"</span>)) {
+					<span class="keyword">return</span> _<span class="keyword">this</span>.loadDependencies(scope, <span class="keyword">function</span>(scope) {
+						scope.loaded = <span class="literal">true</span>;
+						<span class="keyword">if</span>(callback &amp;&amp; <span class="keyword">typeof</span> callback === <span class="string">"function"</span>) {
+							<span class="keyword">return</span> callback(scope);
+						}
+					});
+				} <span class="keyword">else</span> {
+					<span class="keyword">if</span>(callback &amp;&amp; <span class="keyword">typeof</span> callback === <span class="string">"function"</span>) {
+						<span class="keyword">return</span> callback(scope);
+					}
+				}
+			},
+			<span class="comment">/**
+			 @method navigate
+
+			 Responsible for updating the history hash, and changing the URL
+
+			 @param  {String} fragment The location to be loaded
+			 @return {Boolean}
+			 */</span>
+
+			navigate : <span class="keyword">function</span>(fragment) {
+				<span class="keyword">var</span> location, root, url, _<span class="keyword">this</span>;
+				location = window.location;
+				root = location.pathname.replace(<span class="regexp">/[^\/]$/</span>, <span class="string">"$&amp;"</span>);
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				url =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">if</span>(fragment.length) {
+					url = root + location.search + <span class="string">"#!/"</span> + fragment;
+				} <span class="keyword">else</span> {
+					url = root + location.search;
+				}
+				<span class="keyword">if</span>(history.pushState) {
+					history.pushState(<span class="literal">null</span>, document.title, url);
+					_<span class="keyword">this</span>.loadUrl(fragment);
+				} <span class="keyword">else</span> {
+					location.replace(root + url);
+				}
+				<span class="keyword">return</span> <span class="literal">true</span>;
+			},
+			<span class="comment">/**
+			 @method delegateEvents
+
+			 Binds callbacks for a module's events object
+
+			 @param {Object} events Events to be watched for
+			 @param {Object} scope The current module
+			 */</span>
+
+			delegateEvents : <span class="keyword">function</span>(events, scope) {
+				<span class="keyword">var</span> delegateEventSplitter, event_name, i, key, match, max, method, nodes, selector, _results, _<span class="keyword">this</span>;
+				delegateEventSplitter = <span class="regexp">/^(\S+)\s*(.*)$/</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				method =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				match =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				event_name =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				selector =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				nodes =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				key =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">if</span>(!events) {
+					<span class="keyword">return</span>;
+				}
+				_results = [];
+				<span class="keyword">for</span>(key <span class="keyword">in</span> events) {
+					<span class="keyword">if</span>(events.hasOwnProperty(key)) {
+						method = events[key];
+						match = key.match(delegateEventSplitter);
+						event_name = match[<span class="number">1</span>];
+						selector = match[<span class="number">2</span>];
+						nodes = document.querySelectorAll(<span class="string">"[data-view='"</span> + scope.mid + <span class="string">"'] "</span> + selector);
+						i = <span class="number">0</span>;
+						max = nodes.length;
+						_results.push((<span class="keyword">function</span>() {
+							<span class="keyword">var</span> _results1;
+							_results1 = [];
+							<span class="keyword">while</span>(i &lt; max) {
+								_<span class="keyword">this</span>.bindEvent(nodes[i], event_name, scope[method].bind(scope), <span class="literal">true</span>);
+								_results1.push(i++);
+							}
+							<span class="keyword">return</span> _results1;
+						})());
+					} <span class="keyword">else</span> {
+						_results.push(
+						<span class="keyword">void</span> <span class="number">0</span>);
+					}
+				}
+				<span class="keyword">return</span> _results;
+			},
+			<span class="comment">/**
+			 @method bindEvent
+
+			 Used to bind events to DOM objects
+
+			 @param {Object} el Element on which to attach event
+			 @param {String} evt Event name
+			 @param {Function} fn Function to be called
+			 @param {Boolean} [pdef] Boolean to preventDefault
+			 */</span>
+
+			bindEvent : <span class="keyword">function</span>(el, evt, fn, pdef) {
+				pdef = pdef || <span class="literal">false</span>;
+				<span class="keyword">if</span>(el.addEventListener) {
+					<span class="keyword">return</span> el.addEventListener(evt, (<span class="keyword">function</span>(event) {
+						<span class="keyword">if</span>(pdef) {
+							<span class="keyword">if</span>(event.preventDefault) {
+								event.preventDefault();
+							} <span class="keyword">else</span> {
+								event.returnValue = <span class="literal">false</span>;
+							}
+						}
+						<span class="keyword">return</span> fn(event);
+					}), <span class="literal">false</span>);
+				} <span class="keyword">else</span> {
+					<span class="keyword">return</span> el.attachEvent(<span class="string">"on"</span> + evt, <span class="keyword">function</span>(event) {
+						<span class="keyword">if</span>(pdef) {
+							<span class="keyword">if</span>(event.preventDefault) {
+								event.preventDefault();
+							} <span class="keyword">else</span> {
+								event.returnValue = <span class="literal">false</span>;
+							}
+						}
+						<span class="keyword">return</span> fn(event);
+					});
+				}
+			},
+			<span class="comment">/**
+			 @method model
+
+			 Allows for local API model create, read, and delete
+
+			 @param {String} name The name of the model
+			 @param {Object} [data] Contents of the model, blank to return, 'null' to clear
+
+			 Specify a object value to `set`, none to `get`, and 'null' to `clear`
+			 */</span>
+
+			model : <span class="keyword">function</span>() {
+				<span class="keyword">var</span> model, name, params, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				name =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				model =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				params =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">if</span>( <span class="keyword">typeof</span> arguments_[<span class="number">0</span>] === <span class="string">"object"</span>) {
+					params = arguments_[<span class="number">0</span>];
+					params.url = params.url || <span class="literal">false</span>;
+					params.onchange = params.onchange || <span class="literal">false</span>;
+					<span class="keyword">if</span>( <span class="keyword">typeof</span> params.name === <span class="string">"string"</span> &amp;&amp; params.name !== <span class="string">""</span>) {
+						_<span class="keyword">this</span>.models[params.name] = {
+							data : params.data,
+							get : _<span class="keyword">this</span>.sync.bind(_<span class="keyword">this</span>, params.name, <span class="string">"GET"</span>),
+							put : _<span class="keyword">this</span>.sync.bind(_<span class="keyword">this</span>, params.name, <span class="string">"PUT"</span>),
+							post : _<span class="keyword">this</span>.sync.bind(_<span class="keyword">this</span>, params.name, <span class="string">"POST"</span>),
+							<span class="string">"delete"</span> : _<span class="keyword">this</span>.sync.bind(_<span class="keyword">this</span>, params.name, <span class="string">"DELETE"</span>)
+						};
+						<span class="keyword">if</span>(params.url) {
+							_<span class="keyword">this</span>.models[params.name].url = params.url;
+						}
+						<span class="keyword">if</span>(params.onchange) {
+							_<span class="keyword">this</span>.models[params.name].onchange = params.onchange;
+						}
+						<span class="keyword">if</span>(params.onsync) {
+							_<span class="keyword">this</span>.models[params.name].onsync = params.onsync;
+						}
+						<span class="keyword">return</span> _<span class="keyword">this</span>.models[params.name];
+					} <span class="keyword">else</span> {
+						<span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"Cannot create a null model"</span>);
+					}
+				} <span class="keyword">else</span> <span class="keyword">if</span>(arguments_.length === <span class="number">2</span>) {
+					name = arguments_[<span class="number">0</span>];
+					model = _<span class="keyword">this</span>.models[name];
+					<span class="keyword">if</span>( <span class="keyword">typeof</span> arguments_[<span class="number">1</span>] === <span class="string">"object"</span> &amp;&amp; arguments_[<span class="number">1</span>] !== <span class="literal">null</span>) {
+						model.data = arguments_[<span class="number">1</span>];
+						<span class="keyword">if</span>(model.hasOwnProperty(<span class="string">"onchange"</span>)) {
+							model.onchange(model.data);
+						}
+						<span class="keyword">return</span> _<span class="keyword">this</span>.publish(<span class="string">"model_"</span> + name + <span class="string">"_change"</span>, model.data);
+					} <span class="keyword">else</span> {
+						<span class="keyword">return</span>
+						<span class="keyword">delete</span> _<span class="keyword">this</span>.models[name];
+					}
+				} <span class="keyword">else</span> {
+					name = arguments_[<span class="number">0</span>];
+					model = _<span class="keyword">this</span>.models[name];
+					<span class="keyword">return</span> model;
+				}
+			},
+			<span class="comment">/**
+			 @method sync
+
+			 Gets bound to models, used to access API
+
+			 @param {String} name Name of the model
+			 @param {String} method RESTful request method
+			 */</span>
+
+			sync : <span class="keyword">function</span>(name, method) {
+				<span class="keyword">var</span> data, model, sendback, syncParams, url, _<span class="keyword">this</span>;
+				model = <span class="keyword">this</span>.models[name];
+				sendback = {};
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				url = <span class="keyword">this</span>.parseURL(model.url, model.data);
+				data = model.data;
+				syncParams = {
+					url : url,
+					type : method,
+					data : data,
+					qsData : <span class="literal">false</span>,
+					success : <span class="keyword">function</span>(returnData) {
+						sendback.status = <span class="string">"success"</span>;
+						sendback.data = returnData;
+						<span class="keyword">if</span>(method === <span class="string">"GET"</span>) {
+							_<span class="keyword">this</span>.model(name, JSON.parse(returnData));
+						}
+						<span class="keyword">if</span>(method === <span class="string">"DELETE"</span>) {
+							_<span class="keyword">this</span>.model(name, <span class="literal">null</span>);
+						}
+						<span class="keyword">if</span>(model.hasOwnProperty(<span class="string">"onsync"</span>)) {
+							model.onsync(sendback);
+						}
+						<span class="keyword">return</span> _<span class="keyword">this</span>.publish(<span class="string">"model_"</span> + name + <span class="string">"_sync"</span>, sendback);
+					},
+					error : <span class="keyword">function</span>(req) {
+						sendback.status = <span class="string">"error"</span>;
+						sendback.data = req;
+						<span class="keyword">if</span>(model.hasOwnProperty(<span class="string">"onsync"</span>)) {
+							model.onsync(sendback);
+						}
+						_<span class="keyword">this</span>.publish(<span class="string">"model_"</span> + name + <span class="string">"_sync"</span>, sendback);
+						<span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"Model Sync Error: [req] : "</span> + req);
+					}
+				};
+				<span class="keyword">return</span> _<span class="keyword">this</span>.ajax(syncParams);
+			},
+			<span class="comment">/**
+			 @method request
+
+			 Allows for storing pre-set xhr requests for re-use
+
+			 @param {String} name The name of the xhr-request
+			 @param {Object} params Paramaters of the request to define (see @method ajax)
+			 */</span>
+
+			request : <span class="keyword">function</span>(name, params) {
+				<span class="keyword">var</span> _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				<span class="keyword">if</span>( <span class="keyword">typeof</span> params === <span class="string">"object"</span> &amp;&amp; params !== <span class="literal">null</span>) {
+					_<span class="keyword">this</span>.requests[name] = {
+						params : params,
+						call : _<span class="keyword">this</span>.callRequest.bind(_<span class="keyword">this</span>, name)
+					};
+					<span class="keyword">return</span> _<span class="keyword">this</span>.requests[name];
+				}
+				<span class="keyword">if</span>( <span class="keyword">typeof</span> data === <span class="string">"undefined"</span>) {
+					<span class="keyword">return</span> _<span class="keyword">this</span>.requests[name];
+				}
+				<span class="keyword">if</span>(params === <span class="literal">null</span> ? _<span class="keyword">this</span>.requests.hasOwnProperty(name) :
+				<span class="keyword">void</span> <span class="number">0</span>) {
+					<span class="keyword">return</span>
+					<span class="keyword">delete</span> _<span class="keyword">this</span>.requests[name];
+				}
+			},
+			<span class="comment">/**
+			 @method callRequest
+
+			 Fires a stored request via ajax() method
+
+			 @param {String} name The name passed from the bind, or manually supplied
+			 @param {Object} data The data to be sent with the request
+			 @param {Function} [success] Optional success callback, can also be specified in request params
+			 @param {Function} [error] Optional error callback, can also be specified in request params
+			 */</span>
+
+			callRequest : <span class="keyword">function</span>(name, data, success, error) {
+				<span class="keyword">var</span> param, request, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				request = {};
+				param =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				success = success || <span class="literal">false</span>;
+				error = error || <span class="literal">false</span>;
+				<span class="keyword">if</span>(_<span class="keyword">this</span>.requests.hasOwnProperty(name)) {
+					<span class="keyword">for</span>(param <span class="keyword">in</span> _<span class="keyword">this</span>.requests[name].params) {
+						<span class="keyword">if</span>(_<span class="keyword">this</span>.requests[name].params.hasOwnProperty(param)) {
+							request[param] = _<span class="keyword">this</span>.requests[name].params[param];
+						}
+					}
+					request.url = _<span class="keyword">this</span>.parseURL(request.url, data);
+					request.data = data;
+					<span class="keyword">if</span>(success &amp;&amp; <span class="keyword">typeof</span> success === <span class="string">"function"</span>) {
+						request.success = success;
+					}
+					<span class="keyword">if</span>(error &amp;&amp; <span class="keyword">typeof</span> error === <span class="string">"function"</span>) {
+						request.error = error;
+					}
+					<span class="keyword">return</span> _<span class="keyword">this</span>.ajax(request);
+				}
+			},
+			<span class="comment">/**
+			 @method parseURL
+
+			 Parses model's url property against data object
+
+			 @param {String} url The url of the model
+			 @param {Object} data Contents of the model
+			 */</span>
+
+			parseURL : <span class="keyword">function</span>(url, data) {
+				<span class="keyword">return</span> url.replace(<span class="regexp">/\{([^}]+)\}/g</span>, <span class="keyword">function</span>(i, match) {
+					<span class="keyword">return</span> data[match];
+				});
+			},
+			<span class="comment">/**
+			 @method ajax
+
+			 Used to make AJAX calls
+
+			 @param {String} url URL of the resource
+			 @param {Object} [config] Configuration object passed into request
+
+			 Configuration Object:**
+
+			 `url`: URL of request if not specified as first argument
+
+			 `type`: Request method, defaults to `GET`
+
+			 `async`: Run request asynchronously, defaults to `TRUE`
+
+			 `cache`: Cache the request, defaults to `TRUE`
+
+			 `data`: Object or JSON data passed through request
+
+			 `success`: Function called on successful request
+
+			 `error`: Function called on failure of request
+
+			 `qsData`: Allows blocking (set `false`) of `data` add to URL for RESTful requests
+			 */</span>
+
+			ajax : <span class="keyword">function</span>() {
+				<span class="keyword">var</span> formatURL, name, param, param_count, tmp_data, value, xhr;
+				formatURL = <span class="keyword">function</span>(data) {
+					<span class="keyword">var</span> url_split;
+					url_split = xhr.url.split(<span class="string">"?"</span>);
+					<span class="keyword">if</span>(url_split.length !== <span class="number">1</span>) {
+						<span class="keyword">return</span> xhr.url += <span class="string">"&amp;"</span> + data;
+					} <span class="keyword">else</span> {
+						<span class="keyword">return</span> xhr.url += <span class="string">"?"</span> + data;
+					}
+				};
+				xhr = {};
+				<span class="keyword">if</span>(arguments_.length === <span class="number">1</span>) {
+					xhr = arguments_[<span class="number">0</span>];
+				} <span class="keyword">else</span> {
+					xhr = arguments_[<span class="number">1</span>];
+					xhr.url = arguments_[<span class="number">0</span>];
+				}
+				xhr.request = <span class="literal">false</span>;
+				xhr.type = xhr.type || <span class="string">"GET"</span>;
+				xhr.data = xhr.data || <span class="literal">null</span>;
+				<span class="keyword">if</span>(xhr.qsData || !xhr.hasOwnProperty(<span class="string">"qsData"</span>)) {
+					xhr.qsData = <span class="literal">true</span>;
+				} <span class="keyword">else</span> {
+					xhr.qsData = <span class="literal">false</span>;
+				}
+				<span class="keyword">if</span>(xhr.cache || !xhr.hasOwnProperty(<span class="string">"cache"</span>)) {
+					xhr.cache = <span class="literal">true</span>;
+				} <span class="keyword">else</span> {
+					xhr.cache = <span class="literal">false</span>;
+				}
+				<span class="keyword">if</span>(xhr.async || !xhr.hasOwnProperty(<span class="string">"async"</span>)) {
+					xhr.async = <span class="literal">true</span>;
+				} <span class="keyword">else</span> {
+					xhr.async = <span class="literal">false</span>;
+				}
+				<span class="keyword">if</span>(xhr.success &amp;&amp; <span class="keyword">typeof</span> xhr.success === <span class="string">"function"</span>) {
+					xhr.success = xhr.success;
+				} <span class="keyword">else</span> {
+					xhr.success = <span class="literal">false</span>;
+				}
+				<span class="keyword">if</span>(xhr.error &amp;&amp; <span class="keyword">typeof</span> xhr.error === <span class="string">"function"</span>) {
+					xhr.error = xhr.error;
+				} <span class="keyword">else</span> {
+					xhr.error = <span class="literal">false</span>;
+				}
+				<span class="keyword">if</span>(xhr.data) {
+					param_count = <span class="number">0</span>;
+					name =
+					<span class="keyword">void</span> <span class="number">0</span>;
+					value =
+					<span class="keyword">void</span> <span class="number">0</span>;
+					tmp_data = xhr.data;
+					<span class="keyword">for</span>(param <span class="keyword">in</span> tmp_data) {
+						<span class="keyword">if</span>(tmp_data.hasOwnProperty(param)) {
+							name = encodeURIComponent(param);
+							value = encodeURIComponent(tmp_data[param]);
+							<span class="keyword">if</span>(param_count === <span class="number">0</span>) {
+								xhr.data = name + <span class="string">"="</span> + value;
+							} <span class="keyword">else</span> {
+								xhr.data += <span class="string">"&amp;"</span> + name + <span class="string">"="</span> + value;
+							}
+							param_count++;
+						}
+					}
+					xhr.data = xhr.data;
+				}
+				<span class="keyword">if</span>(xhr.data &amp;&amp; xhr.type.toUpperCase() === <span class="string">"GET"</span> &amp;&amp; xhr.qsData) {
+					formatURL(xhr.data);
+				}
+				<span class="keyword">if</span>(!xhr.cache) {
+					formatURL(<span class="keyword">new</span> Date().getTime());
+				}
+				<span class="keyword">if</span>(window.XMLHttpRequest) {
+					xhr.request = <span class="keyword">new</span> XMLHttpRequest();
+				} <span class="keyword">else</span> <span class="keyword">if</span>(window.ActiveXObject) {
+					xhr.request = <span class="keyword">new</span> ActiveXObject(<span class="string">"Microsoft.XMLHTTP"</span>);
+				} <span class="keyword">else</span> {
+					<span class="keyword">return</span> <span class="literal">false</span>;
+				}
+				xhr.request.onreadystatechange = <span class="keyword">function</span>() {
+					<span class="keyword">var</span> e, responseText;
+					responseText =
+					<span class="keyword">void</span> <span class="number">0</span>;
+					<span class="keyword">if</span>(xhr.request.readyState === <span class="number">4</span>) {
+						<span class="keyword">if</span>(xhr.request.status === <span class="number">200</span>) {
+							<span class="keyword">if</span>(xhr.success) {
+								<span class="keyword">try</span> {
+									responseText = JSON.parse(xhr.request.responseText);
+								} <span class="keyword">catch</span> (_error) {
+									e = _error;
+									responseText = xhr.request.responseText;
+								}
+								<span class="keyword">return</span> xhr.success(responseText, xhr.request);
+							}
+						} <span class="keyword">else</span> {
+							<span class="keyword">if</span>(xhr.error) {
+								<span class="keyword">return</span> xhr.error(xhr.request);
+							}
+						}
+					}
+				};
+				xhr.request.open(xhr.type, xhr.url, xhr.async);
+				<span class="keyword">if</span>(xhr.type.toUpperCase() === <span class="string">"POST"</span> || xhr.type.toUpperCase() === <span class="string">"PUT"</span>) {
+					xhr.request.setRequestHeader(<span class="string">"Content-Type"</span>, <span class="string">"application/x-www-form-urlencoded"</span>);
+				}
+				<span class="keyword">return</span> xhr.request.send(xhr.data);
+			},
+			<span class="comment">/**
+			 @method store
+
+			 LocalStorage with polyfill support via cookies
+
+			 @param {String} key The key or identifier for the store
+			 @param {String|Object} [value] Contents of the store, blank to return, 'null' to clear
+
+			 Specify a string/object value to `set`, none to `get`, and 'null' to `clear`
+			 */</span>
+
+			store : <span class="keyword">function</span>(key, value) {
+				<span class="keyword">var</span> data, e, lsSupport, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				lsSupport = <span class="literal">false</span>;
+				data =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">if</span>(localStorage) {
+					lsSupport = <span class="literal">true</span>;
+				}
+				<span class="keyword">if</span>( <span class="keyword">typeof</span> value !== <span class="string">"undefined"</span> &amp;&amp; value !== <span class="literal">null</span>) {
+					<span class="keyword">if</span>( <span class="keyword">typeof</span> value === <span class="string">"object"</span>) {
+						value = JSON.stringify(value);
+					}
+					<span class="keyword">if</span>(lsSupport) {
+						localStorage.setItem(key, value);
+					} <span class="keyword">else</span> {
+						_<span class="keyword">this</span>.createCookie(key, value, <span class="number">30</span>);
+					}
+				}
+				<span class="keyword">if</span>( <span class="keyword">typeof</span> value === <span class="string">"undefined"</span>) {
+					<span class="keyword">if</span>(lsSupport) {
+						data = localStorage.getItem(key);
+					} <span class="keyword">else</span> {
+						data = _<span class="keyword">this</span>.readCookie(key);
+					}
+					<span class="keyword">try</span> {
+						data = JSON.parse(data);
+					} <span class="keyword">catch</span> (_error) {
+						e = _error;
+						data = data;
+					}
+					<span class="keyword">return</span> data;
+				}
+				<span class="keyword">if</span>(value === <span class="literal">null</span>) {
+					<span class="keyword">if</span>(lsSupport) {
+						<span class="keyword">return</span> localStorage.removeItem(key);
+					} <span class="keyword">else</span> {
+						<span class="keyword">return</span> _<span class="keyword">this</span>.createCookie(key, <span class="string">""</span>, -<span class="number">1</span>);
+					}
+				}
+			},
+			<span class="comment">/**
+			 @method createCookie
+
+			 Creates new cookie or removes cookie with negative expiration
+
+			 @param {String} key The key or identifier for the store
+			 @param {String} value Contents of the store
+			 @param {Number} exp Expiration in days
+			 */</span>
+
+			createCookie : <span class="keyword">function</span>(key, value, exp) {
+				<span class="keyword">var</span> date, expires;
+				date = <span class="keyword">new</span> Date();
+				expires =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				date.setTime(date.getTime() + (exp * <span class="number">24</span> * <span class="number">60</span> * <span class="number">60</span> * <span class="number">1000</span>));
+				expires = <span class="string">"; expires="</span> + date.toGMTString();
+				<span class="keyword">return</span> document.cookie = key + <span class="string">"="</span> + value + expires + <span class="string">"; path=/"</span>;
+			},
+			<span class="comment">/**
+			 Returns contents of cookie
+
+			 @param {String} key The key or identifier for the store
+			 @return {String} the value of the cookie
+			 */</span>
+
+			readCookie : <span class="keyword">function</span>(key) {
+				<span class="keyword">var</span> c, ca, i, max, nameEQ;
+				nameEQ = key + <span class="string">"="</span>;
+				ca = document.cookie.split(<span class="string">";"</span>);
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				c =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				i = <span class="number">0</span>;
+				max = ca.length;
+				<span class="keyword">while</span>(i &lt; max) {
+					c = ca[i];
+					<span class="keyword">while</span>(c.charAt(<span class="number">0</span>) === <span class="string">" "</span>) {
+						c = c.substring(<span class="number">1</span>, c.length);
+					}
+					<span class="keyword">if</span>(c.indexOf(nameEQ) === <span class="number">0</span>) {
+						<span class="keyword">return</span> c.substring(nameEQ.length, c.length);
+					}
+					i++;
+				}
+				<span class="keyword">return</span> <span class="literal">null</span>;
+			},
+			<span class="comment">/**
+			 Placeholder object for pub/sub
+			 */</span>
+
+			topics : {},
+			<span class="comment">/**
+			 ID for incrementing
+			 */</span>
+
+			topic_id : <span class="number">0</span>,
+			<span class="comment">/**
+			 @method publish
+
+			 Publish to a topic
+
+			 @param {String} topic Topic of the subscription
+			 @param {Object} args Array of arguments passed
+			 */</span>
+
+			publish : <span class="keyword">function</span>(topic, args) {
+				<span class="keyword">var</span> _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				<span class="keyword">if</span>(!_<span class="keyword">this</span>.topics.hasOwnProperty(topic)) {
+					<span class="keyword">return</span> <span class="literal">false</span>;
+				}
+				setTimeout((<span class="keyword">function</span>() {
+					<span class="keyword">var</span> len, subscribers, _results;
+					subscribers = _<span class="keyword">this</span>.topics[topic];
+					len =
+					<span class="keyword">void</span> <span class="number">0</span>;
+					<span class="keyword">if</span>(subscribers.length) {
+						len = subscribers.length;
+					} <span class="keyword">else</span> {
+						<span class="keyword">return</span> <span class="literal">false</span>;
+					}
+					_results = [];
+					<span class="keyword">while</span>(len--) {
+						_results.push(subscribers[len].fn(args));
+					}
+					<span class="keyword">return</span> _results;
+				}), <span class="number">0</span>);
+				<span class="keyword">return</span> <span class="literal">true</span>;
+			},
+			<span class="comment">/**
+			 @method subscribe
+
+			 Subscribes to a topic
+
+			 @param {String} topic Topic of the subscription
+			 @param {Function} fn Function to be called
+			 */</span>
+
+			subscribe : <span class="keyword">function</span>(topic, fn) {
+				<span class="keyword">var</span> i, id, max, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				id = ++<span class="keyword">this</span>.topic_id;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">if</span>(!_<span class="keyword">this</span>.topics[topic]) {
+					_<span class="keyword">this</span>.topics[topic] = [];
+				}
+				i = <span class="number">0</span>;
+				max = _<span class="keyword">this</span>.topics[topic].length;
+				<span class="keyword">while</span>(i &lt; max) {
+					<span class="keyword">if</span>(_<span class="keyword">this</span>.topics[topic][i].fn.toString() === fn.toString()) {
+						<span class="keyword">return</span> _<span class="keyword">this</span>.topics[topic][i].id;
+					}
+					i++;
+				}
+				_<span class="keyword">this</span>.topics[topic].push({
+					id : id,
+					fn : fn
+				});
+				<span class="keyword">return</span> id;
+			},
+			<span class="comment">/**
+			 @method unsubscribe
+
+			 Unsubscribes from a topic
+
+			 @param {String} token Token of the subscription
+			 */</span>
+
+			unsubscribe : <span class="keyword">function</span>(token) {
+				<span class="keyword">var</span> i, max, topic, _<span class="keyword">this</span>;
+				_<span class="keyword">this</span> = <span class="keyword">this</span>;
+				topic =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				i =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				max =
+				<span class="keyword">void</span> <span class="number">0</span>;
+				<span class="keyword">for</span>(topic <span class="keyword">in</span> _<span class="keyword">this</span>.topics) {
+					<span class="keyword">if</span>(_<span class="keyword">this</span>.topics.hasOwnProperty(topic)) {
+						i = <span class="number">0</span>;
+						max = _<span class="keyword">this</span>.topics[topic].length;
+						<span class="keyword">while</span>(i &lt; max) {
+							<span class="keyword">if</span>(_<span class="keyword">this</span>.topics[topic][i].id === token) {
+								_<span class="keyword">this</span>.topics[topic].splice(i, <span class="number">1</span>);
+								<span class="keyword">return</span> token;
+							}
+							i++;
+						}
+					}
+				}
+				<span class="keyword">return</span> <span class="literal">false</span>;
+			},
+			<span class="comment">/**
+			 @method polyfill_bind
+
+			 Polyfill for .bind()
+			 */</span>
+
+			polyfill_bind : <span class="keyword">function</span>() {
+				<span class="keyword">return</span> Function.prototype.bind = <span class="keyword">function</span>(obj) {
+					<span class="keyword">var</span> args, bound, nop, self, slice;
+					<span class="keyword">if</span>( <span class="keyword">typeof</span> <span class="keyword">this</span> !== <span class="string">"function"</span>) {
+						<span class="keyword">throw</span> <span class="keyword">new</span> TypeError(<span class="string">"Function.prototype.bind - what is trying to be bound is not callable"</span>);
+					}
+					slice = [].slice;
+					args = slice.call(arguments_, <span class="number">1</span>);
+					self = <span class="keyword">this</span>;
+					nop = <span class="keyword">function</span>() {
+					};
+					bound = <span class="keyword">function</span>() {
+						<span class="keyword">return</span> self.apply((<span class="keyword">this</span> <span class="keyword">instanceof</span> nop ? <span class="keyword">this</span> : obj || {}), args.concat(slice.call(arguments_)));
+					};
+					bound.prototype = <span class="keyword">this</span>.prototype;
+					<span class="keyword">return</span> bound;
+				};
+			},
+			<span class="comment">/**
+			 Helper function that executes a callback function on each module.el
+			 @method foreEachEl
+			 @param {function} callback
+			 */</span>
+
+			forEachEl : <span class="keyword">function</span>(callback) {
+				<span class="keyword">var</span> index, max;
+				<span class="keyword">if</span>( <span class="keyword">typeof</span> callback === <span class="string">"function"</span>) {
+					index = -<span class="number">1</span>;
+					max = <span class="keyword">this</span>.el.length;
+					<span class="keyword">if</span>((<span class="keyword">function</span>() {
+						<span class="keyword">var</span> _results;
+						_results = [];
+						<span class="keyword">while</span>(++index &lt; max) {
+							_results.push(callback(index, <span class="keyword">this</span>.el[index], <span class="keyword">this</span>.el) === <span class="literal">false</span>);
+						}
+						<span class="keyword">return</span> _results;
+					}).call(<span class="keyword">this</span>)) {
+						<span class="keyword">break</span>;
+					}
+				} <span class="keyword">else</span> {
+					<span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"Callback must be a function"</span>);
+				}
+			}
+		};
+		<span class="keyword">return</span> spa;
+	});
+}).call(<span class="keyword">this</span>);</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
